@@ -122,6 +122,7 @@ class MpiJob:
         except ApiException as e:
             print("Exception when calling CustomObjectsApi->delete_namespaced_custom_object: %s\\n" % e)
 
+
 def split_path(mntpath=''):
     if mntpath[0] == '/':
         mntpath = mntpath[1:]
