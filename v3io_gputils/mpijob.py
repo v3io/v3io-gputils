@@ -19,7 +19,6 @@ _mpijob_template = {
              'containers': [{
                  'image': 'iguaziodocker/horovod:0.1.0',
                  'imagePullPolicy': 'Never',
-
                  'name': '',
                  'command': [],
                  'volumeMounts': [{'name': 'v3io', 'mountPath': '/User'}],
