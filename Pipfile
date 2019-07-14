@@ -7,7 +7,7 @@ verify_ssl = true
 
 [packages]
 kubernetes = "==9.0.0"
-PyYAML = "==5.1.1"
+PyYAML = "==5.1"
 
 [requires]
 python_version = "3.7"

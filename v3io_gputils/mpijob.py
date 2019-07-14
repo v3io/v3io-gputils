@@ -6,7 +6,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 _mpijob_template = {
- 'apiVersion': 'kubeflow.org/v1alpha1',
+ 'apiVersion': 'kubeflow.org/v1alpha2',
  'kind': 'MPIJob',
  'metadata': {
      'name': '',
@@ -17,15 +17,24 @@ _mpijob_template = {
      'template': {
          'spec': {
              'containers': [{
-                 'image': 'gshatz/horovod:0.1.0',
+                 'image': 'iguaziodocker/horovod:0.1.1',
                  'name': '',
                  'command': [],
-                 'volumeMounts': [],
+                 'volumeMounts': [{'name': 'v3io', 'mountPath': '/User'}],
                  'securityContext': {
                      'capabilities': {'add': ['IPC_LOCK']}},
                  'resources': {
                      'limits': {'nvidia.com/gpu': 1}}}],
-             'volumes': []
+             'volumes': [{
+                 'name': 'v3io',
+                 'flexVolume': {
+                     'driver': 'v3io/fuse',
+                     'options': {
+                        'container': 'users',
+                        'subPath': '/iguazio',
+                        'accessKey': '',
+                  }
+            }}]
          }}}}
 
 
@@ -38,17 +47,16 @@ class MpiJob:
        from mpijob import MpiJob
 
        job = MpiJob('myname', 'img', ['a','b'])
-       job.volume()   # add v3io volume
        print(job.to_yaml())
        job.submit()
 
     """
     group = 'kubeflow.org'
-    version = 'v1alpha1'
+    version = 'v1alpha2'
     plural = 'mpijobs'
 
     def __init__(self, name, image=None, command=None,
-                 replicas=0, namespace='default-tenant'):
+                 replicas=1, namespace='default-tenant'):
         self.api_instance = None
         self.name = name
         self.namespace = namespace
@@ -61,9 +69,13 @@ class MpiJob:
             self._update_container('command', ['mpirun','python'] + command)
         if replicas:
             self._struct['spec']['replicas'] = replicas
+        self._update_access_token(environ.get('V3IO_ACCESS_KEY',''))
 
     def _update_container(self, key, value):
         self._struct['spec']['template']['spec']['containers'][0][key] = value
+
+    def _update_access_token(self, token):
+        self._struct['spec']['template']['spec']['volumes'][0]['flexVolume']['options']['accessKey'] = token
 
     def volume(self, mount='/User', volpath='~/', access_key=''):
         self._update_container('volumeMounts', [{'name': 'v3io', 'mountPath': mount}])
@@ -114,14 +126,13 @@ class MpiJob:
 
     def delete(self):
         try:
-            # delete the mpi job\
+            # delete the mpi job
             body = client.V1DeleteOptions()
             api_response = self.api_instance.delete_namespaced_custom_object(
                 MpiJob.group, MpiJob.version, self.namespace, MpiJob.plural, self.name, body)
             pprint(api_response)
         except ApiException as e:
             print("Exception when calling CustomObjectsApi->delete_namespaced_custom_object: %s\\n" % e)
-
 
 def split_path(mntpath=''):
     if mntpath[0] == '/':
