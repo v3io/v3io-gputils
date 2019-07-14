@@ -6,7 +6,7 @@ from kubernetes import client, config
 from kubernetes.client.rest import ApiException
 
 _mpijob_template = {
- 'apiVersion': 'kubeflow.org/v1alpha1',
+ 'apiVersion': 'kubeflow.org/v1alpha2',
  'kind': 'MPIJob',
  'metadata': {
      'name': '',
@@ -52,7 +52,7 @@ class MpiJob:
 
     """
     group = 'kubeflow.org'
-    version = 'v1alpha1'
+    version = 'v1alpha2'
     plural = 'mpijobs'
 
     def __init__(self, name, image=None, command=None,
