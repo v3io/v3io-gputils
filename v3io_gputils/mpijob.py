@@ -112,6 +112,10 @@ class MpiJob:
         self._struct['spec']['replicas'] = replicas_num
         return self
 
+    def working_dir(self, working_dir):
+        self._update_container('workingDir', working_dir)
+        return self
+
     def to_dict(self):
         return self._struct
 
