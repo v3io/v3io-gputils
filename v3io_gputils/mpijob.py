@@ -21,6 +21,7 @@ _mpijob_template = {
                  'name': '',
                  'command': [],
                  'volumeMounts': [{'name': 'v3io', 'mountPath': '/User'}],
+                 'workingDir': '/User',
                  'securityContext': {
                      'capabilities': {'add': ['IPC_LOCK']}},
                  'resources': {
@@ -31,7 +32,7 @@ _mpijob_template = {
                      'driver': 'v3io/fuse',
                      'options': {
                         'container': 'users',
-                        'subPath': '/iguazio',
+                        'subPath': '',
                         'accessKey': '',
                   }
             }}]
@@ -70,6 +71,7 @@ class MpiJob:
         if replicas:
             self._struct['spec']['replicas'] = replicas
         self._update_access_token(environ.get('V3IO_ACCESS_KEY',''))
+        self._update_running_user(environ.get('V3IO_USERNAME',''))
 
     def _update_container(self, key, value):
         self._struct['spec']['template']['spec']['containers'][0][key] = value
@@ -77,12 +79,15 @@ class MpiJob:
     def _update_access_token(self, token):
         self._struct['spec']['template']['spec']['volumes'][0]['flexVolume']['options']['accessKey'] = token
 
+    def _update_running_user(self, username):
+        self._struct['spec']['template']['spec']['volumes'][0]['flexVolume']['options']['subPath'] = '/' + username
+
     def volume(self, mount='/User', volpath='~/', access_key=''):
         self._update_container('volumeMounts', [{'name': 'v3io', 'mountPath': mount}])
 
         if volpath.startswith('~/'):
-            user = environ.get('V3IO_USERNAME', '')
-            volpath = 'users/' + user + volpath[1:]
+            v3io_home = environ.get('V3IO_HOME', '')
+            volpath = v3io_home + volpath[1:]
 
         container, subpath = split_path(volpath)
         access_key = access_key or environ.get('V3IO_ACCESS_KEY','')
@@ -105,6 +110,10 @@ class MpiJob:
 
     def replicas(self, replicas_num):
         self._struct['spec']['replicas'] = replicas_num
+        return self
+
+    def working_dir(self, working_dir):
+        self._update_container('workingDir', working_dir)
         return self
 
     def to_dict(self):
