@@ -21,6 +21,7 @@ _mpijob_template = {
                  'name': '',
                  'command': [],
                  'volumeMounts': [{'name': 'v3io', 'mountPath': '/User'}],
+                 'workingDir: /User',
                  'securityContext': {
                      'capabilities': {'add': ['IPC_LOCK']}},
                  'resources': {
