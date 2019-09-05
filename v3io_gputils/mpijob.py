@@ -21,6 +21,7 @@ _mpijob_template = {
                  'name': '',
                  'command': [],
                  'volumeMounts': [{'name': 'v3io', 'mountPath': '/User'}],
+                 'workingDir': '/User',
                  'securityContext': {
                      'capabilities': {'add': ['IPC_LOCK']}},
                  'resources': {
@@ -109,6 +110,10 @@ class MpiJob:
 
     def replicas(self, replicas_num):
         self._struct['spec']['replicas'] = replicas_num
+        return self
+
+    def working_dir(self, working_dir):
+        self._update_container('workingDir', working_dir)
         return self
 
     def to_dict(self):
