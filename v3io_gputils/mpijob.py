@@ -123,7 +123,7 @@ class MpiJob:
                     },
                     'Worker': {
                         'replicas': worker_replicas,
-                        'template': self._pod_templates[MPIJobPodTemplateType.launcher]
+                        'template': self._pod_templates[MPIJobPodTemplateType.worker]
                     },
                 },
             },
