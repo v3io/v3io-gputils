@@ -7,8 +7,8 @@ from kubernetes.client.rest import ApiException
 
 
 class MPIJobPodTemplateType(object):
-    launcher = 'launcher'
-    worker = 'worker'
+    launcher = 'Launcher'
+    worker = 'Worker'
 
     @staticmethod
     def all():
@@ -169,11 +169,11 @@ class MpiJob:
         return self
 
     def gpus(self, num, gpu_type='nvidia.com/gpu'):
-        self._update_container('resources', {'limits': {gpu_type: num}}, [MPIJobPodTemplateType.launcher])
+        self._update_container('resources', {'limits': {gpu_type: num}}, [MPIJobPodTemplateType.worker])
         return self
 
     def replicas(self, replicas_num):
-        self._struct['spec']['replicas'] = replicas_num
+        self._struct['spec']['mpiReplicaSpecs'][MPIJobPodTemplateType.worker]['replicas'] = replicas_num
         return self
 
     def working_dir(self, working_dir):
@@ -184,6 +184,8 @@ class MpiJob:
         return self._struct
 
     def to_yaml(self):
+
+        # use safe dumper so yaml.dump will print full objects instead of pointer addresses
         noalias_dumper = yaml.dumper.SafeDumper
         noalias_dumper.ignore_aliases = lambda _self, data: True
 
