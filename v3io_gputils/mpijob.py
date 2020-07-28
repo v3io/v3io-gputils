@@ -184,7 +184,10 @@ class MpiJob:
         return self._struct
 
     def to_yaml(self):
-        return yaml.dump(self.to_dict(), default_flow_style=False, sort_keys=False)
+        noalias_dumper = yaml.dumper.SafeDumper
+        noalias_dumper.ignore_aliases = lambda _self, data: True
+
+        return yaml.dump(self.to_dict(), default_flow_style=False, sort_keys=False, Dumper=noalias_dumper)
 
     def submit(self):
         config.load_incluster_config()
